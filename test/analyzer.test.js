@@ -1,0 +1,64 @@
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const { analyzePrompt } = require("../src/core/analyzer");
+const { selectAgent } = require("../src/core/agentSelector");
+const { optimizePrompt } = require("../src/core/rewriter");
+const { detectContextFromFileList } = require("../src/core/contextDetector");
+
+test("scores vague prompts lower than detailed prompts", () => {
+  const vague = analyzePrompt("Create a microservice.");
+  const detailed = analyzePrompt("Design a customer order API in .NET with PostgreSQL, authentication, tests, Docker deployment, and response contracts.");
+
+  assert.ok(vague.score < detailed.score);
+  assert.ok(vague.issues.some((issue) => issue.includes("business context")));
+});
+
+test("detects workspace context from project files", () => {
+  const context = detectContextFromFileList([
+    "src/App.tsx",
+    "package.json",
+    "docker-compose.yml",
+    ".github/workflows/build.yml",
+    "infra/aws/main.tf"
+  ]);
+
+  assert.deepEqual(context.languages, ["TypeScript"]);
+  assert.ok(context.frameworks.includes("Node.js"));
+  assert.equal(context.hasDocker, true);
+  assert.equal(context.hasCi, true);
+  assert.ok(context.cloud.includes("AWS"));
+});
+
+test("rewrites prompts with structure and token metadata", () => {
+  const result = optimizePrompt("Create a microservice.", {
+    languages: [".NET"],
+    frameworks: ["ASP.NET Core"],
+    databases: ["PostgreSQL"],
+    workspaceNames: ["orders"],
+    cloud: ["AWS"],
+    hasDocker: true
+  });
+
+  assert.match(result.optimized, /Senior Solution Architect/);
+  assert.match(result.optimized, /PostgreSQL/);
+  assert.equal(result.recommendation, "Use Optimized Prompt");
+  assert.ok(result.tokens.before > 0);
+});
+
+test("selects appropriate agent roles for task type", () => {
+  const backend = selectAgent("Build an order API with database persistence", {}, { id: "api", label: "API" });
+  const frontend = selectAgent("Create a React checkout page with loading states", {}, { id: "frontend", label: "Frontend" });
+  const rag = selectAgent("Design a RAG chatbot using vector retrieval", {}, { id: "rag", label: "RAG System" });
+
+  assert.equal(backend.primary.id, "principal-backend-engineer");
+  assert.equal(frontend.primary.id, "frontend-engineer");
+  assert.equal(rag.primary.id, "ai-engineer");
+});
+
+test("optimized prompt includes selected agent focus", () => {
+  const result = optimizePrompt("Create integration tests for the payment API.");
+
+  assert.equal(result.agent.primary.id, "qa-engineer");
+  assert.match(result.optimized, /Act as a Senior QA Automation Engineer/);
+  assert.match(result.optimized, /Agent focus/);
+});

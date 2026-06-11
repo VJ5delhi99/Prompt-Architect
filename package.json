@@ -1,0 +1,163 @@
+{
+  "name": "ai-prompt-architect",
+  "displayName": "AI Prompt Architect",
+  "description": "Prompt quality analyzer and optimizer for AI coding assistants.",
+  "version": "0.1.0",
+  "publisher": "local-dev",
+  "license": "MIT",
+  "author": "Prompt Architect",
+  "main": "./src/extension.js",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Machine Learning",
+    "Other"
+  ],
+  "keywords": [
+    "prompt",
+    "ai",
+    "copilot",
+    "codex",
+    "cursor",
+    "chat"
+  ],
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
+  "files": [
+    "src/**",
+    "media/**",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "package.json"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:promptArchitect.openPreSendChat",
+    "onCommand:promptArchitect.optimizePrompt",
+    "onCommand:promptArchitect.reviewPrompt",
+    "onCommand:promptArchitect.openDashboard"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "promptArchitect.openPreSendChat",
+        "title": "Prompt Architect: Open Pre-Send Chat",
+        "category": "Prompt Architect"
+      },
+      {
+        "command": "promptArchitect.optimizePrompt",
+        "title": "Prompt Architect: Optimize Prompt",
+        "category": "Prompt Architect"
+      },
+      {
+        "command": "promptArchitect.reviewPrompt",
+        "title": "Prompt Architect: Review Prompt Quality",
+        "category": "Prompt Architect"
+      },
+      {
+        "command": "promptArchitect.openDashboard",
+        "title": "Prompt Architect: Open Dashboard",
+        "category": "Prompt Architect"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "promptArchitect.openPreSendChat"
+        },
+        {
+          "command": "promptArchitect.optimizePrompt"
+        },
+        {
+          "command": "promptArchitect.reviewPrompt"
+        },
+        {
+          "command": "promptArchitect.openDashboard"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "promptArchitect.optimizePrompt",
+          "when": "editorHasSelection",
+          "group": "navigation@20"
+        },
+        {
+          "command": "promptArchitect.reviewPrompt",
+          "when": "editorHasSelection",
+          "group": "navigation@21"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "promptArchitect.openPreSendChat",
+        "key": "ctrl+alt+p",
+        "mac": "cmd+alt+p"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "promptArchitect",
+          "title": "Prompt Architect",
+          "icon": "media/activity.svg"
+        }
+      ]
+    },
+    "views": {
+      "promptArchitect": [
+        {
+          "id": "promptArchitect.actions",
+          "name": "Actions",
+          "type": "webview"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Prompt Architect",
+      "properties": {
+        "promptArchitect.defaultDecision": {
+          "type": "string",
+          "enum": [
+            "optimized",
+            "edit",
+            "original"
+          ],
+          "default": "optimized",
+          "description": "Default recommendation shown after prompt optimization."
+        },
+        "promptArchitect.organizationStandards": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "Prefer clear architecture boundaries.",
+            "Include tests for user-facing behavior.",
+            "Call out security and operational concerns."
+          ],
+          "description": "Standards included when rewriting prompts."
+        },
+        "promptArchitect.enableLearning": {
+          "type": "boolean",
+          "default": true,
+          "description": "Track accepted and rejected optimizations locally."
+        },
+        "promptArchitect.openChatAfterCopy": {
+          "type": "boolean",
+          "default": true,
+          "description": "Open the VS Code chat view after copying the selected prompt."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "test": "node --test",
+    "lint": "node --check src/extension.js && node --check src/core/analyzer.js && node --check src/core/agentSelector.js && node --check src/core/contextDetector.js && node --check src/core/templates.js && node --check src/core/tokenEstimator.js && node --check src/core/rewriter.js && node --check src/core/learningStore.js"
+  },
+  "devDependencies": {}
+}
