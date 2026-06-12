@@ -23,6 +23,12 @@ For a closer pre-send workflow, run `Prompt Architect: Open Pre-Send Chat`. Type
 
 For Copilot, Codex CLI, Claude Code, or other assistant integrations, the reusable core in `src/core` can be wrapped by each platform's supported command, pre-submit hook, chat participant, or CLI workflow.
 
+## Recommended Agentic Model
+
+For Senior Principal Prompt Architect work, use the strongest available agentic reasoning model in your target assistant, with support for tool use, long context, codebase reading, structured output, and iterative refinement. In Codex, prefer a GPT-5 class coding agent model for repository-aware prompt architecture, implementation planning, and review workflows.
+
+Use a lighter or faster model only for low-risk prompt cleanup, copy editing, or formatting. Use the senior agentic model when the prompt must reason across architecture, security, testing, deployment, product requirements, or multi-step coding changes.
+
 ## Commands
 
 - `Prompt Architect: Open Pre-Send Chat`

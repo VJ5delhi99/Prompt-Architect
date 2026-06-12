@@ -172,6 +172,7 @@ async function getPromptText() {
 function showOptimizationSummary(optimization) {
   const message = [
     `Optimized prompt copied. Score: ${optimization.analysis.score}/100.`,
+    `Recommended model: ${optimization.model.label}.`,
     `Estimated tokens: ${optimization.tokens.before} -> ${optimization.tokens.after}.`,
     `Reduction: ${optimization.tokens.reduction}%.`
   ].join(" ");
@@ -189,6 +190,12 @@ function renderReview(webview, optimization) {
     <section>
       <h2>Recommended Agent</h2>
       <p>${escapeHtml(optimization.agent.primary.title)}</p>
+    </section>
+    <section>
+      <h2>Recommended Agentic Model</h2>
+      <p><strong>${escapeHtml(optimization.model.label)}</strong></p>
+      <p>${escapeHtml(optimization.model.useFor)}</p>
+      <p>${escapeHtml(optimization.model.rationale)}</p>
     </section>
     <section>
       <h2>Issues Found</h2>
@@ -244,6 +251,7 @@ function renderPreSendChat(webview) {
       <strong id="score"></strong>
       <div id="meta" class="meta"></div>
       <div id="agent" class="meta"></div>
+      <div id="model" class="meta"></div>
       <div>
         <strong>Issues found</strong>
         <ul id="issues"></ul>
@@ -275,6 +283,7 @@ function renderPreSendChat(webview) {
     const scoreEl = document.getElementById("score");
     const metaEl = document.getElementById("meta");
     const agentEl = document.getElementById("agent");
+    const modelEl = document.getElementById("model");
     const issuesEl = document.getElementById("issues");
     const optimizedEl = document.getElementById("optimized");
     const editedEl = document.getElementById("edited");
@@ -332,6 +341,7 @@ function renderPreSendChat(webview) {
       scoreEl.textContent = "Prompt Score: " + current.analysis.score + "/100";
       metaEl.textContent = "Estimated tokens: " + current.tokens.before + " -> " + current.tokens.after + " | Reduction: " + current.tokens.reduction + "%";
       agentEl.textContent = "Recommended agent: " + current.agent.primary.title;
+      modelEl.textContent = "Recommended agentic model: " + current.model.label + " | " + current.model.rationale;
       issuesEl.innerHTML = "";
       current.analysis.issues.forEach((issue) => {
         const item = document.createElement("li");
@@ -348,6 +358,7 @@ function renderPreSendChat(webview) {
       scoreEl.textContent = "Review needed";
       metaEl.textContent = message;
       agentEl.textContent = "";
+      modelEl.textContent = "";
       issuesEl.innerHTML = "";
       optimizedEl.textContent = "";
     }
@@ -396,6 +407,7 @@ function serializeOptimization(optimization) {
     optimized: optimization.optimized,
     analysis: optimization.analysis,
     agent: optimization.agent,
+    model: optimization.model,
     template: optimization.template,
     tokens: optimization.tokens,
     recommendation: optimization.recommendation

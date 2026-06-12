@@ -40,7 +40,9 @@ test("rewrites prompts with structure and token metadata", () => {
   });
 
   assert.match(result.optimized, /Senior Solution Architect/);
+  assert.match(result.optimized, /Use agentic model: GPT-5 class coding agent model/);
   assert.match(result.optimized, /PostgreSQL/);
+  assert.equal(result.model.id, "senior-principal-prompt-architect");
   assert.equal(result.recommendation, "Use Optimized Prompt");
   assert.ok(result.tokens.before > 0);
 });
@@ -60,5 +62,6 @@ test("optimized prompt includes selected agent focus", () => {
 
   assert.equal(result.agent.primary.id, "qa-engineer");
   assert.match(result.optimized, /Act as a Senior QA Automation Engineer/);
+  assert.match(result.optimized, /Recommended|Use agentic model/);
   assert.match(result.optimized, /Agent focus/);
 });

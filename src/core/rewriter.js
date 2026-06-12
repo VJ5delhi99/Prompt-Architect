@@ -8,8 +8,9 @@ function optimizePrompt(prompt, context = {}, options = {}) {
   const analysis = analyzePrompt(original);
   const template = detectTemplate(original);
   const agent = selectAgent(original, context, template);
+  const model = recommendAgenticModel(original, analysis, context, template);
   const standards = options.standards || [];
-  const optimized = buildOptimizedPrompt(original, analysis, template, context, standards, agent);
+  const optimized = buildOptimizedPrompt(original, analysis, template, context, standards, agent, model);
   const tokens = estimateReduction(original, optimized);
 
   return {
@@ -17,13 +18,56 @@ function optimizePrompt(prompt, context = {}, options = {}) {
     optimized,
     analysis,
     agent,
+    model,
     template,
     tokens,
     recommendation: "Use Optimized Prompt"
   };
 }
 
-function buildOptimizedPrompt(original, analysis, template, context, standards, agent) {
+function recommendAgenticModel(original, analysis, context = {}, template = {}) {
+  const text = [
+    original,
+    template.id,
+    template.label,
+    ...(context.languages || []),
+    ...(context.frameworks || []),
+    ...(context.databases || []),
+    ...(context.cloud || [])
+  ].join(" ").toLowerCase();
+
+  const needsSeniorReasoning = [
+    "architecture",
+    "security",
+    "deployment",
+    "multi-step",
+    "refactor",
+    "prompt",
+    "agent",
+    "rag",
+    "workflow",
+    "testing",
+    "production"
+  ].some((keyword) => text.includes(keyword));
+
+  if (needsSeniorReasoning || analysis.score < 75 || context.hasDocker || context.hasKubernetes || context.hasCi) {
+    return {
+      id: "senior-principal-prompt-architect",
+      label: "GPT-5 class coding agent model",
+      useFor: "Senior Principal Prompt Architect work across architecture, implementation planning, testing, security, deployment, and repository-aware prompt refinement.",
+      rationale: "This prompt benefits from strong agentic reasoning, long-context codebase reading, tool use, structured output, and iterative refinement."
+    };
+  }
+
+  return {
+    id: "fast-prompt-editor",
+    label: "Fast coding assistant model",
+    useFor: "Low-risk prompt cleanup, copy editing, formatting, and simple instruction tightening.",
+    rationale: "The prompt appears narrow enough that a lighter model can handle it without deep architecture or repository reasoning."
+  };
+}
+
+function buildOptimizedPrompt(original, analysis, template, context, standards, agent, model) {
   const detected = describeContext(context);
   const sections = template.sections.map((section, index) => `${index + 1}. ${section}`).join("\n");
   const responsibilities = agent.primary.responsibilities.map((item) => `- ${item}`).join("\n");
@@ -33,6 +77,8 @@ function buildOptimizedPrompt(original, analysis, template, context, standards, 
 
   return [
     agent.instruction,
+    `Use agentic model: ${model.label}.`,
+    `Model rationale: ${model.rationale}`,
     "",
     "Agent focus:",
     responsibilities,
