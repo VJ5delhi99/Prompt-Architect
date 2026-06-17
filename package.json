@@ -2,7 +2,7 @@
   "name": "ai-prompt-architect",
   "displayName": "AI Prompt Architect",
   "description": "Prompt quality analyzer and optimizer for AI coding assistants.",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "publisher": "vj5delhi99",
   "license": "MIT",
   "author": "Prompt Architect",

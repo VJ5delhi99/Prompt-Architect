@@ -173,7 +173,7 @@ function showOptimizationSummary(optimization) {
   const tokenChange = formatTokenChange(optimization.tokens);
   const message = [
     `Optimized prompt copied. Score: ${optimization.analysis.score}/100.`,
-    `Recommended assistant: ${optimization.model.label}.`,
+    `Recommended model: ${optimization.model.selected.label}.`,
     `Estimated tokens: ${optimization.tokens.before} -> ${optimization.tokens.after}.`,
     tokenChange
   ].join(" ");
@@ -190,13 +190,17 @@ function renderReview(webview, optimization) {
     </section>
     <section>
       <h2>Recommended Agent</h2>
-      <p>${escapeHtml(optimization.agent.primary.title)}</p>
+      <p>${escapeHtml(optimization.agent.suggestion.summary)}</p>
     </section>
     <section>
       <h2>Recommended Assistant Type</h2>
-      <p><strong>${escapeHtml(optimization.model.label)}</strong></p>
+      <p><strong>${escapeHtml(optimization.model.selected.label)}</strong></p>
       <p>${escapeHtml(optimization.model.useFor)}</p>
       <p>${escapeHtml(optimization.model.rationale)}</p>
+    </section>
+    <section>
+      <h2>Model Token Comparison</h2>
+      ${renderModelComparison(optimization.modelComparison.options)}
     </section>
     <section>
       <h2>Issues Found</h2>
@@ -234,6 +238,9 @@ function renderPreSendChat(webview) {
     .actions { display: flex; flex-wrap: wrap; gap: 8px; }
     .panel { border: 1px solid var(--vscode-panel-border); border-radius: 6px; padding: 14px; }
     .meta { color: var(--vscode-descriptionForeground); display: flex; flex-wrap: wrap; gap: 12px; margin: 8px 0 0; }
+    .comparison { border-collapse: collapse; margin-top: 8px; width: 100%; }
+    .comparison th, .comparison td { border-bottom: 1px solid var(--vscode-panel-border); padding: 6px 4px; text-align: left; vertical-align: top; }
+    .comparison th { color: var(--vscode-descriptionForeground); font-weight: 600; }
     .hidden { display: none; }
     pre { background: var(--vscode-textCodeBlock-background); border: 1px solid var(--vscode-panel-border); border-radius: 6px; overflow: auto; padding: 12px; white-space: pre-wrap; }
     ul { margin-top: 8px; }
@@ -253,6 +260,7 @@ function renderPreSendChat(webview) {
       <div id="meta" class="meta"></div>
       <div id="agent" class="meta"></div>
       <div id="model" class="meta"></div>
+      <div id="modelComparison"></div>
       <div>
         <strong>Issues found</strong>
         <ul id="issues"></ul>
@@ -285,6 +293,7 @@ function renderPreSendChat(webview) {
     const metaEl = document.getElementById("meta");
     const agentEl = document.getElementById("agent");
     const modelEl = document.getElementById("model");
+    const modelComparisonEl = document.getElementById("modelComparison");
     const issuesEl = document.getElementById("issues");
     const optimizedEl = document.getElementById("optimized");
     const editedEl = document.getElementById("edited");
@@ -341,8 +350,9 @@ function renderPreSendChat(webview) {
       current = message.optimization;
       scoreEl.textContent = "Prompt Score: " + current.analysis.score + "/100";
       metaEl.textContent = "Estimated tokens: " + current.tokens.before + " -> " + current.tokens.after + " | " + formatTokenChange(current.tokens);
-      agentEl.textContent = "Recommended agent: " + current.agent.primary.title;
-      modelEl.textContent = "Recommended assistant type: " + current.model.label + " | " + current.model.rationale;
+      agentEl.textContent = "Recommended agent: " + formatAgentSuggestion(current.agent);
+      modelEl.textContent = "Recommended model: " + current.model.selected.label + " | " + current.model.rationale;
+      renderModelComparison(current.modelComparison.options);
       issuesEl.innerHTML = "";
       current.analysis.issues.forEach((issue) => {
         const item = document.createElement("li");
@@ -360,6 +370,7 @@ function renderPreSendChat(webview) {
       metaEl.textContent = message;
       agentEl.textContent = "";
       modelEl.textContent = "";
+      modelComparisonEl.textContent = "";
       issuesEl.innerHTML = "";
       optimizedEl.textContent = "";
     }
@@ -374,6 +385,53 @@ function renderPreSendChat(webview) {
       }
 
       return "Reduced by " + tokens.reduction + "%.";
+    }
+
+    function formatAgentSuggestion(agent) {
+      if (!agent || !agent.suggestion) {
+        return "Unavailable";
+      }
+
+      return agent.suggestion.summary;
+    }
+
+    function renderModelComparison(options) {
+      modelComparisonEl.textContent = "";
+
+      if (!Array.isArray(options) || options.length === 0) {
+        return;
+      }
+
+      const title = document.createElement("strong");
+      title.textContent = "Model token comparison";
+      modelComparisonEl.appendChild(title);
+
+      const table = document.createElement("table");
+      table.className = "comparison";
+      table.innerHTML = "<thead><tr><th>Model</th><th>Prompt</th><th>Implementation</th><th>Total</th></tr></thead>";
+
+      const body = document.createElement("tbody");
+      options.forEach((option) => {
+        const row = document.createElement("tr");
+        const model = document.createElement("td");
+        const prompt = document.createElement("td");
+        const implementation = document.createElement("td");
+        const total = document.createElement("td");
+
+        model.textContent = option.label + (option.recommended ? " (recommended)" : "");
+        prompt.textContent = String(option.estimatedPromptTokens);
+        implementation.textContent = String(option.estimatedImplementationTokens);
+        total.textContent = String(option.estimatedTotalTokens);
+
+        row.appendChild(model);
+        row.appendChild(prompt);
+        row.appendChild(implementation);
+        row.appendChild(total);
+        body.appendChild(row);
+      });
+
+      table.appendChild(body);
+      modelComparisonEl.appendChild(table);
     }
   </script>
 </body>
@@ -421,10 +479,36 @@ function serializeOptimization(optimization) {
     analysis: optimization.analysis,
     agent: optimization.agent,
     model: optimization.model,
+    modelComparison: optimization.modelComparison,
     template: optimization.template,
     tokens: optimization.tokens,
     recommendation: optimization.recommendation
   };
+}
+
+function renderModelComparison(options) {
+  const rows = options.map((option) => `
+    <tr>
+      <td>${escapeHtml(option.label)}${option.recommended ? " (recommended)" : ""}</td>
+      <td>${option.estimatedPromptTokens}</td>
+      <td>${option.estimatedImplementationTokens}</td>
+      <td>${option.estimatedTotalTokens}</td>
+    </tr>
+  `).join("");
+
+  return `
+    <table class="comparison">
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Prompt tokens</th>
+          <th>Implementation tokens</th>
+          <th>Total estimate</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
 }
 
 function formatTokenChange(tokens) {
@@ -500,6 +584,9 @@ function htmlPage(webview, title, body) {
     h1 { font-size: 28px; margin: 0 0 20px; }
     h2 { font-size: 16px; margin: 22px 0 8px; }
     pre { background: var(--vscode-textCodeBlock-background); border: 1px solid var(--vscode-panel-border); border-radius: 6px; overflow: auto; padding: 16px; white-space: pre-wrap; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border-bottom: 1px solid var(--vscode-panel-border); padding: 8px 6px; text-align: left; vertical-align: top; }
+    th { color: var(--vscode-descriptionForeground); font-weight: 600; }
     .score { font-size: 32px; font-weight: 700; margin: 0; }
     .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
     article { border: 1px solid var(--vscode-panel-border); border-radius: 6px; padding: 16px; }

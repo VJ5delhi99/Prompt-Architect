@@ -135,6 +135,7 @@ function selectAgent(prompt, context = {}, template = {}) {
   return {
     primary,
     supporting,
+    suggestion: buildAgentSuggestion(primary, supporting),
     instruction: buildAgentInstruction(primary, supporting)
   };
 }
@@ -154,8 +155,21 @@ function buildAgentInstruction(primary, supporting) {
   return `Act as a ${primary.title}.${supportText}`;
 }
 
+function buildAgentSuggestion(primary, supporting) {
+  const supportTitles = supporting.map((agent) => agent.title);
+
+  return {
+    primary: primary.title,
+    supporting: supportTitles,
+    summary: supportTitles.length > 0
+      ? `${primary.title}; collaborate with ${supportTitles.join(" and ")} where relevant.`
+      : primary.title
+  };
+}
+
 module.exports = {
   agents,
   selectAgent,
-  buildAgentInstruction
+  buildAgentInstruction,
+  buildAgentSuggestion
 };

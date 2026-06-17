@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.4
+
+- Added concrete model suggestions for GPT-5.5, GPT-5.4, Claude Opus, and Claude Haiku.
+- Added estimated prompt, implementation, and total token comparison for model choices.
+- Show the recommended model and token comparison in review and pre-send chat surfaces.
+
+## 0.1.3
+
+- Added explicit agent suggestions to optimized prompt output.
+- Show agent suggestions in prompt review and pre-send chat surfaces.
+- Added regression coverage for prompt output that includes agent suggestions.
+
 ## 0.1.2
 
 - Added a dedicated Prompt Architect agent and prompt-engineering template.

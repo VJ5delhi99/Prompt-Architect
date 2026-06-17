@@ -56,10 +56,10 @@ test("keeps normal extension improvement prompts concise with balanced model", (
 
   assert.equal(result.template.id, "code-change");
   assert.equal(result.model.id, "balanced-coding-model");
-  assert.doesNotMatch(result.optimized, /GPT-5/);
-  assert.doesNotMatch(result.optimized, /GPT/);
+  assert.equal(result.model.selected.label, "GPT-5.4");
+  assert.match(result.optimized, /Model suggestion:\n- Recommended: GPT-5.4/);
   assert.doesNotMatch(result.optimized, /Endpoint contracts/);
-  assert.ok(result.optimized.length < 1100);
+  assert.ok(result.optimized.length < 1250);
 });
 
 test("recognizes prompt engineering tasks and keeps rewrites compact", () => {
@@ -67,10 +67,12 @@ test("recognizes prompt engineering tasks and keeps rewrites compact", () => {
 
   assert.equal(result.template.id, "prompt-engineering");
   assert.equal(result.agent.primary.id, "prompt-architect");
+  assert.equal(result.agent.suggestion.primary, "Principal Prompt Architect");
+  assert.equal(result.model.selected.label, "GPT-5.4");
   assert.match(result.optimized, /Principal Prompt Architect/);
-  assert.doesNotMatch(result.optimized, /GPT/);
+  assert.match(result.optimized, /Agent suggestion:\n- Primary: Principal Prompt Architect/);
   assert.doesNotMatch(result.optimized, /Recommended model/);
-  assert.ok(result.optimized.length < 900);
+  assert.ok(result.optimized.length < 1100);
 });
 
 test("selects appropriate agent roles for task type", () => {
@@ -87,7 +89,42 @@ test("optimized prompt includes selected agent focus", () => {
   const result = optimizePrompt("Create integration tests for the payment API.");
 
   assert.equal(result.agent.primary.id, "qa-engineer");
+  assert.equal(result.agent.suggestion.summary, "Senior QA Automation Engineer; collaborate with Principal Backend Engineer where relevant.");
   assert.match(result.optimized, /Act as a Senior QA Automation Engineer/);
+  assert.match(result.optimized, /Agent suggestion:\n- Primary: Senior QA Automation Engineer\n- Supporting: Principal Backend Engineer/);
+  assert.match(result.optimized, /Model suggestion:/);
   assert.doesNotMatch(result.optimized, /Recommended model/);
   assert.match(result.optimized, /Must cover/);
+});
+
+test("agent suggestion travels with prompt output for mixed prompt architecture work", () => {
+  const result = optimizePrompt("I am not seeing now it is providing agent suggestion with prompt", {
+    languages: ["JavaScript"],
+    frameworks: ["Node.js"],
+    workspaceNames: ["Prompt-Architect"]
+  });
+
+  assert.equal(result.agent.primary.id, "prompt-architect");
+  assert.deepEqual(result.agent.suggestion.supporting, ["Principal Backend Engineer", "AI/RAG Systems Engineer"]);
+  assert.match(result.optimized, /Agent suggestion:/);
+  assert.match(result.optimized, /- Primary: Principal Prompt Architect/);
+  assert.match(result.optimized, /- Supporting: Principal Backend Engineer, AI\/RAG Systems Engineer/);
+});
+
+test("compares concrete model token estimates for implementation", () => {
+  const result = optimizePrompt("Design a production RAG agent with API integration, tests, and deployment.", {
+    languages: ["JavaScript"],
+    frameworks: ["Node.js"],
+    hasDocker: true,
+    hasCi: true
+  });
+
+  assert.equal(result.model.id, "advanced-reasoning-coding-model");
+  assert.equal(result.model.selected.label, "GPT-5.5");
+  assert.equal(result.modelComparison.recommended.label, "GPT-5.5");
+  assert.equal(result.modelComparison.options.length, 4);
+  assert.ok(result.modelComparison.options.every((option) => option.estimatedPromptTokens === result.tokens.after));
+  assert.ok(result.modelComparison.options.every((option) => option.estimatedImplementationTokens > 0));
+  assert.ok(result.modelComparison.options.some((option) => option.label === "Claude Opus"));
+  assert.ok(result.modelComparison.options.some((option) => option.label === "Claude Haiku"));
 });
