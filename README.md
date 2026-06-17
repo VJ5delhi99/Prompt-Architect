@@ -1,8 +1,7 @@
 # AI Prompt Architect
 
 AI Prompt Architect is a VS Code and Cursor-compatible extension prototype that reviews weak AI coding prompts before you send them. It scores prompt quality, detects missing details, rewrites the prompt with workspace context, estimates token usage, recommends an agent role, and records local acceptance analytics.
-
-![Prompt Architect Pre-Send Chat](media/pre-send-chat.png)
+ 
 
 ## What It Does
 
@@ -33,14 +32,11 @@ For a closer pre-send workflow, use `Prompt Architect: Open Pre-Send Chat`. Type
 ### Pre-Send Chat
 
 Use this panel when you want to review a prompt before sending it to an AI assistant.
-
-![Pre-Send Chat flow](media/pre-send-chat.png)
-
+ 
 ### Prompt Quality Review
 
 The review panel shows the quality score, recommended agent, recommended assistant type, token estimates, issues found, and the optimized prompt.
-
-![Prompt Quality Review output](media/review-output.png)
+ 
 
 ## Installation
 
