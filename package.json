@@ -3,9 +3,17 @@
   "displayName": "AI Prompt Architect",
   "description": "Prompt quality analyzer and optimizer for AI coding assistants.",
   "version": "0.1.0",
-  "publisher": "local-dev",
+  "publisher": "vj5delhi99",
   "license": "MIT",
   "author": "Prompt Architect",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/VJ5delhi99/Prompt-Architect.git"
+  },
+  "bugs": {
+    "url": "https://github.com/VJ5delhi99/Prompt-Architect/issues"
+  },
+  "homepage": "https://github.com/VJ5delhi99/Prompt-Architect#readme",
   "main": "./src/extension.js",
   "engines": {
     "vscode": "^1.90.0"
