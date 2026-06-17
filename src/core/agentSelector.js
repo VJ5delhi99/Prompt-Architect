@@ -70,6 +70,16 @@ const agents = [
     ]
   },
   {
+    id: "prompt-architect",
+    title: "Principal Prompt Architect",
+    keywords: ["prompt", "prmpt", "prompt engineer", "prompt architect", "instruction", "system prompt", "rewrite"],
+    responsibilities: [
+      "clarify the user's intent",
+      "remove ambiguity and unnecessary length",
+      "produce a concise, high-signal prompt"
+    ]
+  },
+  {
     id: "technical-writer",
     title: "Senior Technical Writer",
     keywords: ["document", "readme", "documentation", "guide", "architecture doc", "api docs"],

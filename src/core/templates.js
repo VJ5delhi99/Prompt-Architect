@@ -1,5 +1,16 @@
 const templates = [
   {
+    id: "prompt-engineering",
+    label: "Prompt Engineering",
+    keywords: ["prompt", "prmpt", "prompt engineer", "prompt architect", "system prompt", "instruction", "rewrite"],
+    sections: [
+      "Goal",
+      "Context",
+      "Constraints",
+      "Output"
+    ]
+  },
+  {
     id: "code-change",
     label: "Code Change",
     keywords: ["code", "bug", "fix", "improve", "extension", "vscode", "node", "javascript", "refactor"],

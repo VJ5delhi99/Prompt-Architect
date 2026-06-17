@@ -170,11 +170,12 @@ async function getPromptText() {
 }
 
 function showOptimizationSummary(optimization) {
+  const tokenChange = formatTokenChange(optimization.tokens);
   const message = [
     `Optimized prompt copied. Score: ${optimization.analysis.score}/100.`,
-    `Recommended model: ${optimization.model.label}.`,
+    `Recommended assistant: ${optimization.model.label}.`,
     `Estimated tokens: ${optimization.tokens.before} -> ${optimization.tokens.after}.`,
-    `Reduction: ${optimization.tokens.reduction}%.`
+    tokenChange
   ].join(" ");
 
   vscode.window.showInformationMessage(message);
@@ -192,7 +193,7 @@ function renderReview(webview, optimization) {
       <p>${escapeHtml(optimization.agent.primary.title)}</p>
     </section>
     <section>
-      <h2>Recommended Agentic Model</h2>
+      <h2>Recommended Assistant Type</h2>
       <p><strong>${escapeHtml(optimization.model.label)}</strong></p>
       <p>${escapeHtml(optimization.model.useFor)}</p>
       <p>${escapeHtml(optimization.model.rationale)}</p>
@@ -203,7 +204,7 @@ function renderReview(webview, optimization) {
     </section>
     <section>
       <h2>Token Estimate</h2>
-      <p>${optimization.tokens.before} before, ${optimization.tokens.after} after, ${optimization.tokens.reduction}% reduction.</p>
+      <p>${optimization.tokens.before} before, ${optimization.tokens.after} after. ${escapeHtml(formatTokenChange(optimization.tokens))}</p>
     </section>
     <section>
       <h2>Optimized Prompt</h2>
@@ -339,9 +340,9 @@ function renderPreSendChat(webview) {
 
       current = message.optimization;
       scoreEl.textContent = "Prompt Score: " + current.analysis.score + "/100";
-      metaEl.textContent = "Estimated tokens: " + current.tokens.before + " -> " + current.tokens.after + " | Reduction: " + current.tokens.reduction + "%";
+      metaEl.textContent = "Estimated tokens: " + current.tokens.before + " -> " + current.tokens.after + " | " + formatTokenChange(current.tokens);
       agentEl.textContent = "Recommended agent: " + current.agent.primary.title;
-      modelEl.textContent = "Recommended agentic model: " + current.model.label + " | " + current.model.rationale;
+      modelEl.textContent = "Recommended assistant type: " + current.model.label + " | " + current.model.rationale;
       issuesEl.innerHTML = "";
       current.analysis.issues.forEach((issue) => {
         const item = document.createElement("li");
@@ -361,6 +362,18 @@ function renderPreSendChat(webview) {
       modelEl.textContent = "";
       issuesEl.innerHTML = "";
       optimizedEl.textContent = "";
+    }
+
+    function formatTokenChange(tokens) {
+      if (!tokens) {
+        return "Token change unavailable.";
+      }
+
+      if (tokens.direction === "expanded") {
+        return "Expanded by " + tokens.expansion + "% for clarity.";
+      }
+
+      return "Reduced by " + tokens.reduction + "%.";
     }
   </script>
 </body>
@@ -412,6 +425,18 @@ function serializeOptimization(optimization) {
     tokens: optimization.tokens,
     recommendation: optimization.recommendation
   };
+}
+
+function formatTokenChange(tokens) {
+  if (!tokens) {
+    return "Token change unavailable.";
+  }
+
+  if (tokens.direction === "expanded") {
+    return `Expanded by ${tokens.expansion}% for clarity.`;
+  }
+
+  return `Reduced by ${tokens.reduction}%.`;
 }
 
 class ActionsViewProvider {

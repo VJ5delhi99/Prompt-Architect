@@ -67,7 +67,7 @@ function recommendAgenticModel(original, analysis, context = {}, template = {}) 
   if (seniorSignals || context.hasKubernetes || (context.hasDocker && context.hasCi)) {
     return {
       id: "advanced-reasoning-coding-model",
-      label: "Advanced reasoning coding model",
+      label: "Advanced reasoning coding assistant",
       useFor: "Architecture-heavy, security-sensitive, production, migration, RAG, or multi-system changes.",
       rationale: "The request includes complexity signals that benefit from deeper planning, repository context, and careful tradeoff analysis."
     };
@@ -76,7 +76,7 @@ function recommendAgenticModel(original, analysis, context = {}, template = {}) 
   if (mediumSignals || analysis.score < 45 || context.hasDocker || context.hasCi) {
     return {
       id: "balanced-coding-model",
-      label: "Balanced coding model",
+      label: "Balanced coding assistant",
       useFor: "Normal feature work, bug fixes, refactors, tests, and repository-aware implementation tasks.",
       rationale: "The request needs code understanding and validation, but not maximum-depth architecture reasoning."
     };
@@ -84,7 +84,7 @@ function recommendAgenticModel(original, analysis, context = {}, template = {}) 
 
   return {
     id: "fast-prompt-editor",
-    label: "Fast coding assistant model",
+    label: "Fast prompt editor",
     useFor: "Low-risk prompt cleanup, copy editing, formatting, and simple instruction tightening.",
     rationale: "The prompt appears narrow enough that a lighter model can handle it without deep architecture or repository reasoning."
   };
@@ -92,45 +92,48 @@ function recommendAgenticModel(original, analysis, context = {}, template = {}) 
 
 function buildOptimizedPrompt(original, analysis, template, context, standards, agent, model) {
   const detected = describeContext(context);
-  const sections = template.sections.slice(0, 5).map((section) => `- ${section}`).join("\n");
+  const sections = template.sections.slice(0, 4).map((section) => `- ${section}`).join("\n");
   const responsibilities = agent.primary.responsibilities.slice(0, 2).map((item) => `- ${item}`).join("\n");
   const standardLines = (standards.length > 0
     ? standards
     : ["Follow the existing codebase style.", "Keep changes focused and maintainable."])
-    .slice(0, 3)
+    .slice(0, 2)
     .map((standard) => `- ${standard}`)
     .join("\n");
-  const topIssues = analysis.issues.slice(0, 4).map((issue) => `- ${issue}`).join("\n");
+  const topIssues = analysis.issues.slice(0, 3).map((issue) => `- ${issue}`).join("\n");
 
   return [
     agent.instruction,
-    `Recommended model: ${model.label} (${model.rationale})`,
     "",
-    "Original request:",
-    original,
+    `Task: ${toSingleLine(original)}`,
     "",
-    "Improve the request into a clear, executable task. Preserve intent and avoid extra scope.",
-    "",
-    "Focus:",
-    responsibilities,
-    "",
-    "Missing details to cover:",
-    topIssues || "- No major gaps detected.",
+    "Rewrite or execute this as a clear, scoped request. Preserve intent, remove filler, and avoid adding unrelated work.",
     "",
     "Project context:",
-    detected,
+    trimContext(detected),
     "",
-    `Output structure (${template.label}):`,
+    `Output (${template.label}):`,
     sections,
     "",
-    "Guardrails:",
+    "Must cover:",
+    responsibilities,
+    topIssues ? topIssues : "- No major gaps detected.",
+    "",
+    "Rules:",
     "- Ask only if a missing detail would change the implementation materially.",
-    "- Include tests or validation steps for user-facing behavior.",
-    "- Call out reliability, security, or operational risks only when relevant.",
     standardLines,
     "",
-    "Return concise implementation steps and the expected final result."
+    "Return the smallest useful answer with validation steps and the expected result."
   ].join("\n");
+}
+
+function toSingleLine(value) {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function trimContext(contextText) {
+  const lines = String(contextText || "").split("\n").filter(Boolean);
+  return lines.slice(0, 5).join("\n") || "- No project metadata detected; keep assumptions explicit.";
 }
 
 function describeContext(context) {

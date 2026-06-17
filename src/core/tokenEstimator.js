@@ -11,13 +11,17 @@ function estimateTokens(text) {
 function estimateReduction(beforeText, afterText) {
   const before = estimateTokens(beforeText);
   const after = estimateTokens(afterText);
-  const reduction = before === 0 ? 0 : Math.max(0, Math.round(((before - after) / before) * 100));
+  const change = before === 0 ? 0 : Math.round(((before - after) / before) * 100);
+  const reduction = Math.max(0, change);
+  const expansion = Math.max(0, -change);
 
   return {
     before,
     after,
     reduction,
-    estimatedCostSaved: `${reduction}%`
+    expansion,
+    direction: change >= 0 ? "reduced" : "expanded",
+    estimatedCostSaved: change >= 0 ? `${reduction}%` : `0%`
   };
 }
 

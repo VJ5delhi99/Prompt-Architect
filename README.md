@@ -7,9 +7,9 @@ AI Prompt Architect is a VS Code and Cursor-compatible extension prototype that 
 - Scores prompt quality from 0-100.
 - Detects missing context, constraints, architecture, output format, testing, security, and deployment expectations.
 - Enriches prompts using workspace signals such as languages, frameworks, package files, Docker files, database hints, and cloud hints.
-- Rewrites prompts using specialized templates for software, AI, testing, and documentation work.
-- Selects an appropriate agent role for the task, such as Solution Architect, Backend Engineer, Frontend Engineer, DevOps Engineer, Security Engineer, QA Engineer, AI/RAG Engineer, or Technical Writer.
-- Estimates token usage before and after optimization.
+- Rewrites prompts using compact specialized templates for prompt engineering, software, AI, testing, and documentation work.
+- Selects an appropriate agent role for the task, such as Prompt Architect, Solution Architect, Backend Engineer, Frontend Engineer, DevOps Engineer, Security Engineer, QA Engineer, AI/RAG Engineer, or Technical Writer.
+- Estimates token usage before and after optimization, including when a vague prompt expands for clarity.
 - Lets the developer choose: use optimized prompt, edit optimized prompt, or use original prompt.
 - Provides a pre-send chat panel where prompts are reviewed before being copied into the assistant chat.
 - Stores local learning data for accepted, edited, and rejected suggestions.
@@ -23,11 +23,11 @@ For a closer pre-send workflow, run `Prompt Architect: Open Pre-Send Chat`. Type
 
 For Copilot, Codex CLI, Claude Code, or other assistant integrations, the reusable core in `src/core` can be wrapped by each platform's supported command, pre-submit hook, chat participant, or CLI workflow.
 
-## Recommended Agentic Model
+## Recommended Assistant Type
 
-For Senior Principal Prompt Architect work, use the strongest available agentic reasoning model in your target assistant, with support for tool use, long context, codebase reading, structured output, and iterative refinement. In Codex, prefer a GPT-5 class coding agent model for repository-aware prompt architecture, implementation planning, and review workflows.
+For Senior Principal Prompt Architect work, use the strongest available reasoning-capable assistant in your target tool when the prompt needs repository awareness, implementation planning, review, security, testing, deployment, or architecture tradeoffs.
 
-Use a lighter or faster model only for low-risk prompt cleanup, copy editing, or formatting. Use the senior agentic model when the prompt must reason across architecture, security, testing, deployment, product requirements, or multi-step coding changes.
+Use a lighter or faster assistant for low-risk prompt cleanup, copy editing, formatting, or shortening. The extension recommends an assistant type instead of naming a specific vendor model so suggestions do not become stale.
 
 ## Commands
 
