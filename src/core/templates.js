@@ -1,5 +1,17 @@
 const templates = [
   {
+    id: "code-change",
+    label: "Code Change",
+    keywords: ["code", "bug", "fix", "improve", "extension", "vscode", "node", "javascript", "refactor"],
+    sections: [
+      "Goal",
+      "Relevant files or behavior",
+      "Implementation steps",
+      "Tests or validation",
+      "Expected result"
+    ]
+  },
+  {
     id: "microservice",
     label: "Microservice",
     keywords: ["microservice", "service", "distributed", "bounded context"],
@@ -96,7 +108,7 @@ function detectTemplate(prompt) {
   }));
 
   scored.sort((a, b) => b.score - a.score);
-  return scored[0].score > 0 ? scored[0].template : templates[1];
+  return scored[0].score > 0 ? scored[0].template : templates[0];
 }
 
 module.exports = {

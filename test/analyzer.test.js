@@ -40,11 +40,25 @@ test("rewrites prompts with structure and token metadata", () => {
   });
 
   assert.match(result.optimized, /Senior Solution Architect/);
-  assert.match(result.optimized, /Use agentic model: GPT-5 class coding agent model/);
+  assert.match(result.optimized, /Recommended model: Advanced reasoning coding model/);
   assert.match(result.optimized, /PostgreSQL/);
-  assert.equal(result.model.id, "senior-principal-prompt-architect");
+  assert.equal(result.model.id, "advanced-reasoning-coding-model");
   assert.equal(result.recommendation, "Use Optimized Prompt");
   assert.ok(result.tokens.before > 0);
+});
+
+test("keeps normal extension improvement prompts concise with balanced model", () => {
+  const result = optimizePrompt("Review the code and improve the VS Code extension. Make suggested prompts smaller.", {
+    languages: ["JavaScript"],
+    frameworks: ["Node.js"],
+    workspaceNames: ["Prompt-Architect"]
+  });
+
+  assert.equal(result.template.id, "code-change");
+  assert.equal(result.model.id, "balanced-coding-model");
+  assert.doesNotMatch(result.optimized, /GPT-5/);
+  assert.doesNotMatch(result.optimized, /Endpoint contracts/);
+  assert.ok(result.optimized.length < 1400);
 });
 
 test("selects appropriate agent roles for task type", () => {
@@ -62,6 +76,6 @@ test("optimized prompt includes selected agent focus", () => {
 
   assert.equal(result.agent.primary.id, "qa-engineer");
   assert.match(result.optimized, /Act as a Senior QA Automation Engineer/);
-  assert.match(result.optimized, /Recommended|Use agentic model/);
-  assert.match(result.optimized, /Agent focus/);
+  assert.match(result.optimized, /Recommended model/);
+  assert.match(result.optimized, /Focus/);
 });
